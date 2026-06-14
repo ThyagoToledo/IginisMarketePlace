@@ -94,3 +94,56 @@ header p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
 
 a { color: var(--link); }
 code { background: #00000040; padding: 1px 5px; border-radius: 4px; }
+
+/* ---- Header / nav ---- */
+.header-inner {
+  max-width: 980px; margin: 0 auto; padding: 14px 32px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.brand { font-size: 18px; font-weight: 700; color: var(--text); text-decoration: none; }
+.nav { display: flex; align-items: center; gap: 16px; }
+.nav a { text-decoration: none; }
+.user-box { display: inline-flex; align-items: center; gap: 8px; }
+.avatar { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--border); }
+.uname { font-size: 13px; color: var(--muted); }
+
+button { font: inherit; cursor: pointer; border-radius: 6px; border: 1px solid var(--border); }
+.btn-gh { background: var(--accent); color: #fff; border: none; padding: 8px 14px; }
+.btn-gh:disabled { background: #555; cursor: not-allowed; }
+.btn-ghost { background: transparent; color: var(--muted); padding: 6px 12px; }
+.btn-danger { background: #a83232; color: #fff; border: none; padding: 6px 12px; }
+
+/* ---- Forms ---- */
+h1 { font-size: 22px; }
+.muted { color: var(--muted); font-size: 14px; }
+.form { display: flex; flex-direction: column; gap: 12px; max-width: 620px; margin-top: 16px; }
+.form label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+.form input, .form select, .form textarea {
+  background: #1a1a1a; color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 8px 10px; font: inherit;
+}
+.form .checkbox { flex-direction: row; align-items: flex-start; gap: 8px; }
+.form .checkbox input { width: auto; margin-top: 3px; }
+
+.result-ok { margin-top: 16px; padding: 14px; border-radius: 8px; background: #1d3a26; border: 1px solid var(--accent); }
+.result-err { margin-top: 16px; padding: 14px; border-radius: 8px; background: #3a1d1d; border: 1px solid #a83232; }
+.result-ok ul, .result-err ul { margin: 8px 0 0; padding-left: 18px; }
+
+/* ---- Admin table ---- */
+.admin-table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 14px; }
+.admin-table th, .admin-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.admin-table th { color: var(--muted); font-weight: 600; }
+
+/* ---- Legal ---- */
+.legal h2 { font-size: 16px; margin-top: 24px; color: var(--accent); }
+.legal p, .legal li { color: #d8d8d8; font-size: 14px; line-height: 1.6; }
+
+/* ---- Footer + cookie banner ---- */
+.site-footer { max-width: 980px; margin: 40px auto 24px; padding: 16px 32px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+.cookie-banner {
+  position: fixed; left: 16px; right: 16px; bottom: 16px; max-width: 760px; margin: 0 auto;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px 16px; display: flex; align-items: center; gap: 14px; font-size: 13px;
+  box-shadow: 0 8px 30px rgba(0,0,0,.4);
+}
+.cookie-banner span { flex: 1; color: #d8d8d8; }
