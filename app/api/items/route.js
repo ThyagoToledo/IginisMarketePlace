@@ -1,5 +1,5 @@
 import { getSql } from '../../../lib/db';
-import { auth } from '../../../auth';
+import { resolveUser } from '../../../lib/apiauth';
 import { validateSubmission } from '../../../lib/security';
 
 export const dynamic = 'force-dynamic';
@@ -68,15 +68,19 @@ export async function GET(request) {
 // de seguranca. Vincula ao usuario dono (author_id).
 export async function POST(request) {
   try {
-    const session = await auth();
-    if (!session || !session.user || !session.user.id) {
-      return Response.json({ error: 'Faca login com o GitHub para publicar.' }, { status: 401 });
+    // Aceita sessao web (cookie) OU token Bearer (editor/CLI).
+    const user = await resolveUser(request);
+    if (!user) {
+      return Response.json(
+        { error: 'Nao autenticado. Faca login com GitHub ou envie um token valido.' },
+        { status: 401 }
+      );
     }
 
     const sql = getSql();
 
-    // Re-checa o ban no banco (o token JWT pode estar defasado).
-    const u = await sql`SELECT is_banned FROM users WHERE id = ${session.user.id}`;
+    // Re-checa o ban no banco (fonte da verdade).
+    const u = await sql`SELECT is_banned FROM users WHERE id = ${user.id}`;
     if (u.length === 0) {
       return Response.json({ error: 'Usuario nao encontrado.' }, { status: 401 });
     }
@@ -102,11 +106,11 @@ export async function POST(request) {
     }
 
     // Registra o aceite dos termos no perfil do usuario.
-    await sql`UPDATE users SET accepted_terms_at = now() WHERE id = ${session.user.id}`;
+    await sql`UPDATE users SET accepted_terms_at = now() WHERE id = ${user.id}`;
 
     const authorName = body.author && String(body.author).trim()
       ? String(body.author).trim()
-      : (session.user.login || session.user.name || 'unknown');
+      : (user.login || user.name || 'unknown');
 
     const rows = await sql`
       INSERT INTO items
@@ -116,7 +120,7 @@ export async function POST(request) {
         (${body.type}, ${String(body.name).trim()}, ${authorName},
          ${body.description || ''}, ${body.version || '1.0.0'}, ${String(body.gitUrl).trim()},
          ${body.coverImageText || ''}, ${body.dependencies || 'None'},
-         ${session.user.id}, 'approved', ${JSON.stringify(report)})
+         ${user.id}, 'approved', ${JSON.stringify(report)})
       ON CONFLICT (git_url) DO UPDATE SET
         name = EXCLUDED.name, description = EXCLUDED.description,
         version = EXCLUDED.version, cover_image_text = EXCLUDED.cover_image_text,

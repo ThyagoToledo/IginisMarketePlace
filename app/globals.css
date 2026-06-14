@@ -147,3 +147,10 @@ h1 { font-size: 22px; }
   box-shadow: 0 8px 30px rgba(0,0,0,.4);
 }
 .cookie-banner span { flex: 1; color: #d8d8d8; }
+
+/* ---- Token box ---- */
+.token-box {
+  display: flex; align-items: center; gap: 10px; margin: 10px 0 6px;
+  background: #111; border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px;
+}
+.token-box code { flex: 1; word-break: break-all; background: none; font-size: 13px; }

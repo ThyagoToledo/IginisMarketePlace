@@ -13,6 +13,7 @@ export default async function Header() {
         <nav className="nav">
           <Link href="/">Catalogo</Link>
           <Link href="/publish">Publicar</Link>
+          {user && <Link href="/account">Conta</Link>}
           {user?.isAdmin && <Link href="/admin">Admin</Link>}
           {user ? (
             <span className="user-box">

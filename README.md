@@ -65,6 +65,10 @@ IginisMarketePlace/
 | GET  | `/api/me`        | — | Usuario logado |
 | GET  | `/api/admin/users` | admin | Lista usuarios |
 | POST | `/api/admin/users/:id` | admin | `{action:"ban"\|"unban", reason}` |
+| GET/POST | `/api/tokens` | login | Lista / gera token de publicacao |
+| DELETE | `/api/tokens/:id` | login | Revoga um token |
+
+> `POST /api/items` aceita **sessao (cookie web)** OU **`Authorization: Bearer <token>`** (editor/CLI).
 
 ## Deploy na Vercel + Neon + GitHub OAuth
 
@@ -92,8 +96,13 @@ O catalogo (`GET /api/items`) e publico — o editor IgnisEngine
 IGNIS_MARKETPLACE_URL = https://SEU-PROJETO.vercel.app
 ```
 
-> Publicar pelo editor exige autenticacao: previsto para um proximo passo (login na web →
-> gerar token → colar no editor). Hoje a publicacao autenticada e feita pela pagina `/publish`.
+Publicar pelo editor (sem navegador) usa **token**:
+1. Logue no site com GitHub → pagina **Conta** (`/account`) → **Gerar novo token** → copie.
+2. No editor: **Community Hub → 🔑 Token** → cole e salve.
+3. Use **💻 Publicar com token** no editor (ou **🌐 Publicar no site** para o fluxo web).
+
+O token vai no header `Authorization: Bearer <token>`. Rode a migracao
+`db/migrations/003_api_tokens.sql` no Neon para criar a tabela de tokens.
 
 ## Dev local (opcional)
 
