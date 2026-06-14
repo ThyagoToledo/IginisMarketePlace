@@ -1,0 +1,6 @@
+type,name,author,description,version,git_url,cover_image_text,dependencies,downloads
+workshop,Pixel Fantasy Trees Pack,Arthur_Art,"Beautiful hand-drawn 2D sprite pack containing 16 unique fantasy trees.",1.2.0,https://github.com/ArthurArt/fantasy-trees-pack.git,Sprite Pack,None,128
+workshop,Retro Sound FX Library,ChiptuneHero,"Collection of 40 chiptune sound effects (.wav) for retro games.",1.0.0,https://github.com/ChiptuneHero/retro-sfx-lib.git,SFX Library,None,86
+plugin,Advanced Physics 2D,PhysTech,"Decoupled rigidbodies and collision solver plugin with friction and bounce.",2.1.0,https://github.com/PhysTech/advanced-physics-2d.git,Physics Engine,"Core-Physics >= 1.0",342
+plugin,Virtual Gamepad UI Overlay,MobileDev,"Adds a mobile-friendly virtual joystick overlay to screen automatically.",1.0.5,https://github.com/MobileDev/virtual-gamepad-ignis.git,Mobile Gamepad,"UI-Canvas >= 2.0",57
+asset,Cyberpunk Tilemap 32x32,NeonPixel,"32x32 tileset containing city backgrounds, neon lights and pavements.",1.1.0,https://github.com/NeonPixel/cyberpunk-tilemap.git,Neon Tileset,None,201
