@@ -1,65 +1,15 @@
-export const metadata = { title: 'Termos de Servico - Ignis Marketplace' };
+export const metadata = { title: 'Termos de Serviço' };
+
+const sections = [
+  ['Aceitação', <p key="accept">Ao acessar ou publicar conteúdo no Ignis Marketplace (“Serviço”), você concorda com estes Termos de Serviço e com a Política de Privacidade. Se não concordar, não utilize o Serviço.</p>],
+  ['Natureza do Serviço', <p key="nature">O Serviço é um catálogo/índice que lista <strong>URLs de repositórios Git</strong> de plugins e assets de terceiros para o IgnisEngine. O Serviço <strong>não hospeda, não distribui binários e não executa</strong> o código de terceiros. O download e a instalação ocorrem diretamente a partir dos repositórios externos indicados.</p>],
+  ['Contas e identificação', <p key="accounts">A autenticação é feita via GitHub. Você é responsável pela atividade realizada com a sua conta e por manter a veracidade das informações enviadas.</p>],
+  ['Conteúdo do usuário e responsabilidade', <ul key="content"><li>Você declara ser titular ou ter autorização sobre o conteúdo do repositório enviado.</li><li>O conteúdo dos repositórios é de responsabilidade exclusiva de seus autores. O Serviço não garante segurança, funcionamento, qualidade ou ausência de código malicioso.</li><li>É proibido enviar conteúdo ilegal, malicioso, pirateado ou que viole direitos de terceiros.</li></ul>],
+  ['Verificação de segurança e moderação', <p key="security">Submissões passam por verificação automática de campos e análise básica do repositório. Submissões reprovadas não são publicadas. Os administradores podem remover itens e banir contas que violem estes Termos.</p>],
+  ['Isenção de garantias e limitação de responsabilidade', <p key="warranty">O Serviço é fornecido “no estado em que se encontra”, sem garantias. Na extensão máxima permitida em lei, o Serviço e seus mantenedores não se responsabilizam por danos decorrentes do uso de conteúdo de terceiros listado, incluindo perdas de dados ou prejuízos causados por software obtido de repositórios externos.</p>],
+  ['Alterações', <p key="changes">Estes Termos podem ser atualizados a qualquer momento. O uso continuado implica aceitação.</p>],
+];
 
 export default function TermsPage() {
-  return (
-    <main className="container legal">
-      <h1>Termos de Servico</h1>
-      <p className="muted">Ultima atualizacao: 2026-06-14</p>
-
-      <h2>1. Aceitacao</h2>
-      <p>
-        Ao acessar ou publicar conteudo no Ignis Marketplace ("Servico"), voce concorda com
-        estes Termos de Servico e com a Politica de Privacidade. Se nao concordar, nao utilize
-        o Servico.
-      </p>
-
-      <h2>2. Natureza do Servico</h2>
-      <p>
-        O Servico e um catalogo/indice que lista <strong>URLs de repositorios Git</strong> de
-        plugins e assets de terceiros para o IgnisEngine. O Servico <strong>nao hospeda,
-        nao distribui binarios e nao executa</strong> o codigo de terceiros. O download e a
-        instalacao do conteudo ocorrem diretamente a partir dos repositorios externos indicados.
-      </p>
-
-      <h2>3. Contas e identificacao</h2>
-      <p>
-        A autenticacao e feita via GitHub. Voce e responsavel pela atividade realizada com a sua
-        conta e por manter a veracidade das informacoes enviadas.
-      </p>
-
-      <h2>4. Conteudo do usuario e responsabilidade</h2>
-      <ul>
-        <li>Voce declara ser titular ou ter autorizacao sobre o conteudo do repositorio enviado.</li>
-        <li>
-          O conteudo dos repositorios e de <strong>responsabilidade exclusiva de seus autores</strong>.
-          O Servico nao garante seguranca, funcionamento, qualidade ou ausencia de codigo malicioso
-          em repositorios de terceiros.
-        </li>
-        <li>
-          E proibido enviar conteudo ilegal, malicioso (malware, stealers, etc.), que viole direitos
-          de terceiros, ou que contenha material pirateado.
-        </li>
-      </ul>
-
-      <h2>5. Verificacao de seguranca e moderacao</h2>
-      <p>
-        Submissoes passam por uma verificacao automatica (validacao de campos e analise basica do
-        repositorio). Submissoes reprovadas <strong>nao sao publicadas</strong>. Os administradores
-        podem remover qualquer item e <strong>banir</strong> contas que violem estes Termos, a
-        qualquer momento e a seu criterio.
-      </p>
-
-      <h2>6. Isencao de garantias e limitacao de responsabilidade</h2>
-      <p>
-        O Servico e fornecido "no estado em que se encontra", sem garantias de qualquer tipo. Na
-        extensao maxima permitida em lei, o Servico e seus mantenedores <strong>nao se
-        responsabilizam</strong> por quaisquer danos diretos ou indiretos decorrentes do uso do
-        Servico ou de conteudo de terceiros listado, incluindo perdas de dados ou prejuizos
-        causados por software baixado de repositorios externos.
-      </p>
-
-      <h2>7. Alteracoes</h2>
-      <p>Estes Termos podem ser atualizados a qualquer momento. O uso continuado implica aceitacao.</p>
-    </main>
-  );
+  return <main className="legal-page"><header className="legal-header"><p className="eyebrow">IgnisEngine Forge</p><h1>Termos de Serviço</h1><p className="muted">Última atualização: 14 de junho de 2026</p></header><article className="panel legal-card">{sections.map(([title, content]) => <section className="legal-section" key={title}><h2>{title}</h2>{content}</section>)}</article></main>;
 }

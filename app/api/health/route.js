@@ -8,9 +8,9 @@ export async function GET() {
     const sql = getSql();
     const rows = await sql`SELECT count(*)::int AS total FROM items`;
     return Response.json({ status: 'ok', db: 'connected', items: rows[0].total });
-  } catch (err) {
+  } catch {
     return Response.json(
-      { status: 'degraded', db: 'unavailable', error: String(err.message || err) },
+      { status: 'degraded', db: 'unavailable' },
       { status: 503 }
     );
   }

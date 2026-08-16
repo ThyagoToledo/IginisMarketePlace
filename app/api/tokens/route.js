@@ -1,6 +1,7 @@
 import { getSql } from '../../../lib/db';
 import { auth } from '../../../auth';
 import { generateToken, hashToken } from '../../../lib/apiauth';
+import { rejectCrossOriginMutation, serviceUnavailable } from '../../../lib/api-errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,14 +9,18 @@ export const dynamic = 'force-dynamic';
 async function requireSession() {
   const session = await auth();
   if (!session || !session.user || !session.user.id) return null;
-  return session.user;
+  const sql = getSql();
+  const rows = await sql`
+    SELECT id, username AS login FROM users
+    WHERE id = ${Number(session.user.id)} AND is_banned = false`;
+  return rows[0] || null;
 }
 
 // GET /api/tokens -> lista os tokens do usuario (sem o valor secreto).
 export async function GET() {
-  const user = await requireSession();
-  if (!user) return Response.json({ error: 'Faca login.' }, { status: 401 });
   try {
+    const user = await requireSession();
+    if (!user) return Response.json({ error: 'Faca login.' }, { status: 401 });
     const sql = getSql();
     const rows = await sql`
       SELECT id, token_prefix AS "tokenPrefix", name,
@@ -23,15 +28,18 @@ export async function GET() {
       FROM api_tokens WHERE user_id = ${user.id} ORDER BY created_at DESC`;
     return Response.json(rows);
   } catch (err) {
-    return Response.json({ error: String(err.message || err) }, { status: 503 });
+    return serviceUnavailable('tokens.get', err);
   }
 }
 
 // POST /api/tokens  body: { name? } -> cria um token e RETORNA o valor 1 unica vez.
 export async function POST(request) {
-  const user = await requireSession();
-  if (!user) return Response.json({ error: 'Faca login.' }, { status: 401 });
+  const originError = rejectCrossOriginMutation(request);
+  if (originError) return originError;
+
   try {
+    const user = await requireSession();
+    if (!user) return Response.json({ error: 'Faca login.' }, { status: 401 });
     let name = 'editor';
     try {
       const body = await request.json();
@@ -49,6 +57,6 @@ export async function POST(request) {
     // O valor so aparece aqui — depois fica so o hash.
     return Response.json({ token, name }, { status: 201 });
   } catch (err) {
-    return Response.json({ error: String(err.message || err) }, { status: 503 });
+    return serviceUnavailable('tokens.post', err);
   }
 }

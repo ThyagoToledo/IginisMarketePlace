@@ -1,6 +1,7 @@
 import { getSql } from '../../../lib/db';
 import { resolveUser } from '../../../lib/apiauth';
 import { validateSubmission } from '../../../lib/security';
+import { rejectCrossOriginMutation, serviceUnavailable } from '../../../lib/api-errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,55 +12,28 @@ export async function GET(request) {
   try {
     const sql = getSql();
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type');
-    const q = searchParams.get('q');
-    const like = q ? `%${q}%` : null;
+    const requestedType = searchParams.get('type');
+    const type = ['plugin', 'workshop', 'asset'].includes(requestedType) ? requestedType : null;
+    const term = String(searchParams.get('q') || '').trim();
+    const like = term ? `%${term}%` : null;
 
-    let rows;
-    if (type && like) {
-      rows = await sql`
-        SELECT i.id, i.type, i.name, i.author, i.description, i.version,
-               i.git_url AS "gitUrl", i.cover_image_text AS "coverImageText",
-               i.dependencies, i.downloads, i.status, i.created_at AS "createdAt",
-               u.username AS "ownerUsername", u.avatar_url AS "ownerAvatar"
-        FROM items i LEFT JOIN users u ON u.id = i.author_id
-        WHERE i.status = 'approved' AND COALESCE(u.is_banned, false) = false
-          AND i.type = ${type}
-          AND (i.name ILIKE ${like} OR i.description ILIKE ${like} OR i.author ILIKE ${like})
-        ORDER BY i.downloads DESC, i.created_at DESC`;
-    } else if (type) {
-      rows = await sql`
-        SELECT i.id, i.type, i.name, i.author, i.description, i.version,
-               i.git_url AS "gitUrl", i.cover_image_text AS "coverImageText",
-               i.dependencies, i.downloads, i.status, i.created_at AS "createdAt",
-               u.username AS "ownerUsername", u.avatar_url AS "ownerAvatar"
-        FROM items i LEFT JOIN users u ON u.id = i.author_id
-        WHERE i.status = 'approved' AND COALESCE(u.is_banned, false) = false
-          AND i.type = ${type}
-        ORDER BY i.downloads DESC, i.created_at DESC`;
-    } else if (like) {
-      rows = await sql`
-        SELECT i.id, i.type, i.name, i.author, i.description, i.version,
-               i.git_url AS "gitUrl", i.cover_image_text AS "coverImageText",
-               i.dependencies, i.downloads, i.status, i.created_at AS "createdAt",
-               u.username AS "ownerUsername", u.avatar_url AS "ownerAvatar"
-        FROM items i LEFT JOIN users u ON u.id = i.author_id
-        WHERE i.status = 'approved' AND COALESCE(u.is_banned, false) = false
-          AND (i.name ILIKE ${like} OR i.description ILIKE ${like} OR i.author ILIKE ${like})
-        ORDER BY i.downloads DESC, i.created_at DESC`;
-    } else {
-      rows = await sql`
-        SELECT i.id, i.type, i.name, i.author, i.description, i.version,
-               i.git_url AS "gitUrl", i.cover_image_text AS "coverImageText",
-               i.dependencies, i.downloads, i.status, i.created_at AS "createdAt",
-               u.username AS "ownerUsername", u.avatar_url AS "ownerAvatar"
-        FROM items i LEFT JOIN users u ON u.id = i.author_id
-        WHERE i.status = 'approved' AND COALESCE(u.is_banned, false) = false
-        ORDER BY i.downloads DESC, i.created_at DESC`;
-    }
+    const rows = await sql`
+      SELECT i.id, i.type, i.name, i.author, i.description, i.version,
+             i.git_url AS "gitUrl", i.cover_image_text AS "coverImageText",
+             i.dependencies, i.downloads, i.status, i.created_at AS "createdAt",
+             u.username AS "ownerUsername", u.avatar_url AS "ownerAvatar",
+             EXISTS (SELECT 1 FROM item_promotions p WHERE p.item_id = i.id AND p.kind = 'ignis') AS "ignisFeatured",
+             EXISTS (SELECT 1 FROM item_promotions p WHERE p.item_id = i.id AND p.kind = 'sponsored') AS "sponsoredFeatured"
+      FROM items i LEFT JOIN users u ON u.id = i.author_id
+      WHERE i.status = 'approved' AND COALESCE(u.is_banned, false) = false
+        AND (${type}::text IS NULL OR i.type = ${type})
+        AND (${like}::text IS NULL OR (
+          i.name ILIKE ${like} OR i.description ILIKE ${like} OR i.author ILIKE ${like}
+        ))
+      ORDER BY i.downloads DESC, i.created_at DESC`;
     return Response.json(rows);
   } catch (err) {
-    return Response.json({ error: String(err.message || err) }, { status: 503 });
+    return serviceUnavailable('items.get', err);
   }
 }
 
@@ -67,6 +41,9 @@ export async function GET(request) {
 // Exige: login (GitHub), nao estar banido, aceite dos termos, e passar no gate
 // de seguranca. Vincula ao usuario dono (author_id).
 export async function POST(request) {
+  const originError = rejectCrossOriginMutation(request);
+  if (originError) return originError;
+
   try {
     // Aceita sessao web (cookie) OU token Bearer (editor/CLI).
     const user = await resolveUser(request);
@@ -125,10 +102,17 @@ export async function POST(request) {
         name = EXCLUDED.name, description = EXCLUDED.description,
         version = EXCLUDED.version, cover_image_text = EXCLUDED.cover_image_text,
         dependencies = EXCLUDED.dependencies, security_report = EXCLUDED.security_report
+      WHERE items.author_id = EXCLUDED.author_id
       RETURNING id, type, name, git_url AS "gitUrl", status`;
 
+    if (!rows[0]) {
+      return Response.json(
+        { error: 'Este repositorio ja pertence a outro criador.' },
+        { status: 409 }
+      );
+    }
     return Response.json({ ok: true, item: rows[0], warnings: report.warnings }, { status: 201 });
   } catch (err) {
-    return Response.json({ error: String(err.message || err) }, { status: 503 });
+    return serviceUnavailable('items.post', err);
   }
 }

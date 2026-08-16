@@ -1,8 +1,8 @@
 # Ignis Marketplace
 
 Catalogo online de **plugins e assets** do [IgnisEngine](https://github.com/URSoftware/IgnisEngine),
-com **contas de usuario (GitHub OAuth)**, **gate de seguranca** nas submissoes, **moderacao/admin**
-e camada legal (Termos, Privacidade, consentimento de cookies).
+com **contas de usuario (GitHub OAuth)**, **gate de seguranca** nas submissoes, **moderacao/admin**,
+curadoria de destaques e camada legal (Termos, Privacidade, consentimento de cookies).
 
 Backend serverless (Next.js) na **Vercel** + banco **Neon (Postgres)**.
 
@@ -12,7 +12,7 @@ Backend serverless (Next.js) na **Vercel** + banco **Neon (Postgres)**.
 
 ## Stack
 
-- **Next.js 14** (App Router) — frontend + API Routes
+- **Next.js 15** (App Router) — frontend + API Routes
 - **Auth.js v5 (next-auth)** — login com **GitHub OAuth**, identidade unica por usuario
 - **@neondatabase/serverless** — driver Postgres serverless
 - **Neon** + **Vercel** — banco e hospedagem (free tier)
@@ -25,7 +25,8 @@ IginisMarketePlace/
 ├── app/
 │   ├── page.js                  # catalogo (apenas aprovados, com dono)
 │   ├── publish/page.js          # publicar (login + aceite + gate)
-│   ├── admin/                   # painel admin (ban/unban) — restrito
+│   ├── admin/                   # usuarios + destaques — restrito
+│   ├── donate/                  # pagina de apoio e regras de patrocinio
 │   ├── terms / privacy          # paginas legais
 │   ├── components/              # Header (login), CookieConsent
 │   └── api/
@@ -33,11 +34,11 @@ IginisMarketePlace/
 │       ├── me                   # usuario logado
 │       ├── items                # GET catalogo · POST publicar (gate)
 │       ├── items/[id]           # GET · POST downloads · DELETE (admin/dono)
-│       └── admin/users          # listar / banir (admin)
+│       └── admin/               # usuarios + destaques (admin)
 ├── lib/db.js · lib/security.js  # Neon · gate de seguranca
 └── db/
     ├── schema.sql               # esquema base
-    └── migrations/002_users_security.sql  # usuarios + seguranca (idempotente)
+    └── migrations/              # usuarios, tokens e destaques (idempotentes)
 ```
 
 ## Usuarios, seguranca e admin
@@ -47,8 +48,14 @@ IginisMarketePlace/
   `is_admin` automaticamente ao logar. Apenas admins acessam `/admin` e os endpoints `/api/admin/*`.
 - **Gate de seguranca** (ao publicar): valida os campos, valida a URL do repo (host permitido,
   repo existe/publico/nao arquivado via GitHub API) e roda uma blocklist. **Reprovado nao sobe.**
+- **Defesa web:** CSP, bloqueio de framing, politica de referrer/permissoes, validacao de origem nas
+  mutacoes e respostas de erro sem detalhes internos.
 - **Moderacao:** admin pode **banir** usuarios (banido nao loga nem publica, e seus itens somem do
   catalogo) e remover itens.
+- **Curadoria:** administradores podem adicionar/remover criacoes aprovadas em **Destaques do
+  Ignis** e **Destaques patrocinados**. A trilha guarda quem promoveu e quando.
+- **Catalogo real:** o site le exclusivamente do Neon. Nao ha fallback com pacotes ou imagens de
+  demonstracao; indisponibilidade do banco e exibida como tal.
 - **Legal:** Termos de Servico e Privacidade/Cookies, banner de consentimento e aceite obrigatorio
   antes de publicar (com isencao de responsabilidade sobre conteudo de terceiros).
 
@@ -65,6 +72,8 @@ IginisMarketePlace/
 | GET  | `/api/me`        | — | Usuario logado |
 | GET  | `/api/admin/users` | admin | Lista usuarios |
 | POST | `/api/admin/users/:id` | admin | `{action:"ban"\|"unban", reason}` |
+| GET | `/api/admin/highlights` | admin | Lista criacoes aprovadas e seus destaques |
+| POST | `/api/admin/highlights` | admin | Adiciona/remove destaque Ignis ou patrocinado |
 | GET/POST | `/api/tokens` | login | Lista / gera token de publicacao |
 | DELETE | `/api/tokens/:id` | login | Revoga um token |
 
@@ -75,7 +84,7 @@ IginisMarketePlace/
 1. **Import na Vercel:** New Project → `ThyagoToledo/IginisMarketePlace` → Deploy.
 2. **Banco Neon:** aba **Storage → Create Database → Neon (Free) → Connect to Project**
    (injeta `DATABASE_URL`).
-3. **Tabelas:** no Neon → SQL Editor → rode `db/migrations/002_users_security.sql`.
+3. **Tabelas:** no Neon → SQL Editor → rode, em ordem, as migracoes `002`, `003` e `004`.
 4. **GitHub OAuth App:** github.com → **Settings → Developers → OAuth Apps → New OAuth App**
    - Homepage URL: `https://SEU-PROJETO.vercel.app`
    - **Authorization callback URL:** `https://SEU-PROJETO.vercel.app/api/auth/callback/github`
@@ -85,6 +94,7 @@ IginisMarketePlace/
    - `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET` (do passo 4)
    - `ADMIN_GITHUB_LOGINS=ThyagoToledo,FeronZerbana`
    - opcional: `GITHUB_TOKEN` (escopo `public_repo`, evita rate limit nas checagens)
+   - opcional: `NEXT_PUBLIC_DONATION_URL` (destino HTTPS exibido em `/donate`)
 6. **Redeploy.** Teste `SUA_URL/api/health` e faca login com GitHub no topo do site.
 
 ## Conexao com o editor
@@ -106,4 +116,4 @@ O token vai no header `Authorization: Bearer <token>`. Rode a migracao
 
 ## Dev local (opcional)
 
-Requer Node 18+. `npm install`, copie `.env.example` para `.env` e preencha. `npm run dev`.
+Requer Node 20.9+. `npm install`, copie `.env.example` para `.env.local` e preencha. `npm run dev`.

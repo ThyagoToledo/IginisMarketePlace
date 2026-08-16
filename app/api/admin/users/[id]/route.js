@@ -1,17 +1,25 @@
 import { getSql } from '../../../../../lib/db';
-import { auth } from '../../../../../auth';
+import { getCurrentAdmin } from '../../../../../lib/admin';
+import { rejectCrossOriginMutation, serviceUnavailable } from '../../../../../lib/api-errors';
 
 export const dynamic = 'force-dynamic';
 
 // POST /api/admin/users/:id  body: { action: "ban"|"unban", reason? }
 // Banir/desbanir um usuario (somente admin). Nao permite banir admin.
 export async function POST(request, { params }) {
-  const session = await auth();
-  if (!session || !session.user || !session.user.isAdmin) {
-    return Response.json({ error: 'Acesso restrito a administradores.' }, { status: 403 });
-  }
+  const originError = rejectCrossOriginMutation(request);
+  if (originError) return originError;
+
   try {
-    const id = Number(params.id);
+    const admin = await getCurrentAdmin();
+    if (!admin) {
+      return Response.json({ error: 'Acesso restrito a administradores.' }, { status: 403 });
+    }
+    const resolvedParams = await params;
+    const id = Number(resolvedParams.id);
+    if (!Number.isSafeInteger(id) || id <= 0) {
+      return Response.json({ error: 'Usuario invalido.' }, { status: 400 });
+    }
     const body = await request.json();
     const action = body.action;
     const sql = getSql();
@@ -25,7 +33,8 @@ export async function POST(request, { params }) {
     }
 
     if (action === 'ban') {
-      await sql`UPDATE users SET is_banned = true, ban_reason = ${body.reason || 'Violacao das regras'} WHERE id = ${id}`;
+      const reason = String(body.reason || 'Violacao das regras').trim().slice(0, 500);
+      await sql`UPDATE users SET is_banned = true, ban_reason = ${reason} WHERE id = ${id}`;
     } else if (action === 'unban') {
       await sql`UPDATE users SET is_banned = false, ban_reason = NULL WHERE id = ${id}`;
     } else {
@@ -33,6 +42,6 @@ export async function POST(request, { params }) {
     }
     return Response.json({ ok: true });
   } catch (err) {
-    return Response.json({ error: String(err.message || err) }, { status: 503 });
+    return serviceUnavailable('admin.users.post', err);
   }
 }

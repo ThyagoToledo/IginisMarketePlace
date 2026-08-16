@@ -1,84 +1,77 @@
-import { getSql } from '../lib/db';
+import Link from 'next/link';
+import { loadCatalog } from '../lib/catalog';
+import { artworkStyle } from '../lib/presentation';
+import MarketplaceCard from './components/MarketplaceCard';
+import ForgeSidebar from './components/ForgeSidebar';
 
 export const dynamic = 'force-dynamic';
 
-const SECTIONS = [
-  { type: 'plugin', title: 'Plugins' },
-  { type: 'workshop', title: 'Workshop Assets' },
-  { type: 'asset', title: 'Tilemaps & Art' },
-];
+export default async function Home({ searchParams }) {
+  const query = await searchParams;
+  const type = ['plugin', 'workshop', 'asset'].includes(query?.type) ? query.type : null;
+  const q = String(query?.q || '').trim();
+  const { rows, offline } = await loadCatalog({ type, q });
+  const ignisFeatured = rows.filter((item) => item.ignisFeatured);
+  const sponsoredFeatured = rows.filter((item) => item.sponsoredFeatured);
+  const hero = ignisFeatured[0];
+  const showHighlights = !q && !type;
 
-async function loadCatalog() {
-  try {
-    const sql = getSql();
-    const rows = await sql`
-      SELECT i.id, i.type, i.name, i.author, i.description, i.version,
-             i.git_url AS "gitUrl", i.cover_image_text AS "coverImageText",
-             i.dependencies, i.downloads,
-             u.username AS "ownerUsername", u.avatar_url AS "ownerAvatar"
-      FROM items i
-      LEFT JOIN users u ON u.id = i.author_id
-      WHERE i.status = 'approved' AND COALESCE(u.is_banned, false) = false
-      ORDER BY i.downloads DESC, i.created_at DESC`;
-    return { rows, error: null };
-  } catch (err) {
-    return { rows: [], error: String(err.message || err) };
-  }
-}
-
-function Card({ item }) {
-  const owner = item.ownerUsername && item.ownerUsername !== 'legacy'
-    ? item.ownerUsername
-    : item.author;
   return (
-    <div className="card">
-      <div className="thumb">{item.coverImageText || item.type}</div>
-      <div className="info">
-        <div className="name">
-          {item.name} <span className="ver">v{item.version} · por {owner}</span>
-        </div>
-        <div className="desc">{item.description}</div>
-        <div className="meta">Git: {item.gitUrl} &nbsp;|&nbsp; Deps: {item.dependencies}</div>
+    <main className="marketplace-layout">
+      <ForgeSidebar activeType={type} />
+      <div className="marketplace-content">
+        {offline && <div className="status-note">O catálogo está temporariamente indisponível. Nenhuma criação de exemplo é exibida.</div>}
+
+        {hero && showHighlights && (
+          <section className="marketplace-hero" style={artworkStyle(hero)}>
+            <div>
+              <span className="hero-kicker">Destaque do Ignis</span>
+              <h1>{hero.name}</h1>
+              <p>{hero.description}</p>
+              <Link className="button button-primary" href={`/assets/${hero.id}`}>Ver criação <span>→</span></Link>
+            </div>
+          </section>
+        )}
+
+        {showHighlights && ignisFeatured.length > 0 && (
+          <FeaturedShelf title="Destaques do Ignis" eyebrow="Seleção dos desenvolvedores" items={ignisFeatured} />
+        )}
+
+        {showHighlights && sponsoredFeatured.length > 0 && (
+          <FeaturedShelf title="Destaques patrocinados" eyebrow="Apoio à comunidade" items={sponsoredFeatured} sponsored />
+        )}
+
+        <section className="catalog-section">
+          <div className="catalog-toolbar">
+            <div>
+              <p className="eyebrow">{q ? 'Resultado da busca' : 'Catálogo real'}</p>
+              <h2>{q ? `Resultados para “${q}”` : type ? 'Criações filtradas' : 'Todas as criações'}</h2>
+            </div>
+            <span className="catalog-source">Dados publicados no Neon</span>
+          </div>
+          {rows.length ? (
+            <div className="asset-grid">
+              {rows.map((item, index) => <MarketplaceCard key={item.id} item={item} index={index} />)}
+            </div>
+          ) : (
+            <div className="empty-state"><strong>Nenhum recurso encontrado.</strong><span>Tente outro termo ou remova o filtro atual.</span></div>
+          )}
+        </section>
       </div>
-      <div className="downloads">
-        <strong>{item.downloads}</strong>
-        downloads
-      </div>
-    </div>
+    </main>
   );
 }
 
-export default async function Home() {
-  const { rows, error } = await loadCatalog();
-
+function FeaturedShelf({ title, eyebrow, items, sponsored = false }) {
   return (
-    <main className="container">
-      {error && (
-        <div className="empty">
-          Banco indisponivel. Configure <code>DATABASE_URL</code> (Neon) na Vercel.
-          <br />
-          <small>{error}</small>
-        </div>
-      )}
-
-      {!error && rows.length === 0 && (
-        <div className="empty">
-          Catalogo vazio. Rode a migracao SQL no Neon ou publique o primeiro pacote.
-        </div>
-      )}
-
-      {SECTIONS.map((sec) => {
-        const items = rows.filter((r) => r.type === sec.type);
-        if (items.length === 0) return null;
-        return (
-          <section key={sec.type}>
-            <h2 className="section-title">{sec.title}</h2>
-            {items.map((it) => (
-              <Card key={it.id} item={it} />
-            ))}
-          </section>
-        );
-      })}
-    </main>
+    <section className={`catalog-section featured-shelf${sponsored ? ' sponsored-shelf' : ''}`}>
+      <div className="catalog-toolbar">
+        <div><p className="eyebrow">{eyebrow}</p><h2>{title}</h2></div>
+        {sponsored && <Link href="/donate">Como apoiar</Link>}
+      </div>
+      <div className="asset-grid">
+        {items.map((item, index) => <MarketplaceCard key={item.id} item={item} index={index} />)}
+      </div>
+    </section>
   );
 }

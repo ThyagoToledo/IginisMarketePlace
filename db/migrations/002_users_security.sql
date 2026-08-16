@@ -56,25 +56,16 @@ INSERT INTO users (github_id, username, display_name, is_admin)
 VALUES (0, 'legacy', 'Catalogo Legado', false)
 ON CONFLICT (github_id) DO NOTHING;
 
--- 5) Dados iniciais do catalogo (nao duplica se ja existirem)
-INSERT INTO items (type, name, author, description, version, git_url, cover_image_text, dependencies, downloads) VALUES
-('workshop','Pixel Fantasy Trees Pack','Arthur_Art','Beautiful hand-drawn 2D sprite pack containing 16 unique fantasy trees.','1.2.0','https://github.com/ArthurArt/fantasy-trees-pack.git','Sprite Pack','None',128),
-('workshop','Retro Sound FX Library','ChiptuneHero','Collection of 40 chiptune sound effects (.wav) for retro games.','1.0.0','https://github.com/ChiptuneHero/retro-sfx-lib.git','SFX Library','None',86),
-('plugin','Advanced Physics 2D','PhysTech','Decoupled rigidbodies and collision solver plugin with friction and bounce.','2.1.0','https://github.com/PhysTech/advanced-physics-2d.git','Physics Engine','Core-Physics >= 1.0',342),
-('plugin','Virtual Gamepad UI Overlay','MobileDev','Adds a mobile-friendly virtual joystick overlay to screen automatically.','1.0.5','https://github.com/MobileDev/virtual-gamepad-ignis.git','Mobile Gamepad','UI-Canvas >= 2.0',57),
-('asset','Cyberpunk Tilemap 32x32','NeonPixel','32x32 tileset containing city backgrounds, neon lights and pavements.','1.1.0','https://github.com/NeonPixel/cyberpunk-tilemap.git','Neon Tileset','None',201)
-ON CONFLICT (git_url) DO NOTHING;
-
--- 6) Vincula itens sem dono ao usuario legado e deixa aprovados
+-- 5) Vincula eventuais itens antigos sem dono ao usuario legado e deixa aprovados
 UPDATE items
 SET author_id = (SELECT id FROM users WHERE github_id = 0)
 WHERE author_id IS NULL;
 
--- 7) Admins: ThyagoToledo e FeronZerbana
+-- 6) Admins: ThyagoToledo e FeronZerbana
 --    (o login ja promove automaticamente; este UPDATE cobre quem ja logou antes)
 UPDATE users SET is_admin = true
 WHERE lower(username) IN ('thyagotoledo', 'feronzerbana');
 
--- 8) Conferencias
+-- 7) Conferencias
 SELECT count(*) AS total_itens FROM items;
 SELECT id, username, is_admin, is_banned FROM users ORDER BY id;

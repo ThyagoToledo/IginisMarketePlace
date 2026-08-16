@@ -1,49 +1,14 @@
-export const metadata = { title: 'Privacidade e Cookies - Ignis Marketplace' };
+export const metadata = { title: 'Política de Privacidade e Cookies' };
+
+const sections = [
+  ['Dados que coletamos', <div key="data"><p>Ao entrar com o GitHub, armazenamos os dados mínimos do seu perfil público:</p><ul><li>ID e nome de usuário do GitHub;</li><li>nome de exibição, e-mail (se público) e URL do avatar;</li><li>data de aceite dos termos e itens que você publicar.</li></ul></div>],
+  ['Como usamos os dados', <p key="use">Usamos esses dados para identificar você de forma única, atribuir a autoria dos pacotes publicados, aplicar a moderação e operar o Serviço. Não vendemos seus dados.</p>],
+  ['Cookies', <p key="cookies">Utilizamos cookies essenciais para autenticação e sessão via GitHub/Auth.js. Guardamos também, no seu navegador, a preferência de consentimento. Não utilizamos cookies de publicidade.</p>],
+  ['Terceiros', <p key="third">A autenticação é processada pelo GitHub e a hospedagem pela Vercel, com banco de dados Neon. O conteúdo listado reside em repositórios Git externos, sujeitos às políticas de seus respectivos provedores.</p>],
+  ['Seus direitos', <p key="rights">Você pode solicitar a exclusão da sua conta e dos seus dados entrando em contato com os administradores. Pacotes publicados podem ser removidos pelo autor ou pela administração.</p>],
+  ['Contato', <p key="contact">Dúvidas sobre privacidade podem ser encaminhadas aos mantenedores do projeto no GitHub.</p>],
+];
 
 export default function PrivacyPage() {
-  return (
-    <main className="container legal">
-      <h1>Politica de Privacidade e Cookies</h1>
-      <p className="muted">Ultima atualizacao: 2026-06-14</p>
-
-      <h2>1. Dados que coletamos</h2>
-      <p>Ao entrar com o GitHub, armazenamos os dados minimos do seu perfil publico:</p>
-      <ul>
-        <li>ID e nome de usuario do GitHub;</li>
-        <li>nome de exibicao, e-mail (se publico) e URL do avatar;</li>
-        <li>data de aceite dos termos e itens que voce publicar.</li>
-      </ul>
-
-      <h2>2. Como usamos os dados</h2>
-      <p>
-        Usamos esses dados para identificar voce de forma unica, atribuir a autoria dos pacotes
-        publicados, aplicar a moderacao/seguranca e operar o Servico. Nao vendemos seus dados.
-      </p>
-
-      <h2>3. Cookies</h2>
-      <p>
-        Utilizamos cookies <strong>essenciais</strong> para autenticacao e sessao (via GitHub /
-        Auth.js). Sem eles, o login nao funciona. Guardamos tambem, no seu navegador
-        (localStorage), a sua preferencia de consentimento de cookies. Nao utilizamos cookies de
-        publicidade.
-      </p>
-
-      <h2>4. Terceiros</h2>
-      <p>
-        A autenticacao e processada pelo GitHub e a hospedagem pela Vercel, com banco de dados
-        Neon. O conteudo listado reside em repositorios Git externos, sujeitos as politicas de
-        seus respectivos provedores.
-      </p>
-
-      <h2>5. Seus direitos</h2>
-      <p>
-        Voce pode solicitar a exclusao da sua conta e dos seus dados entrando em contato com os
-        administradores. Pacotes ja publicados podem ser removidos por voce (autor) ou pela
-        administracao.
-      </p>
-
-      <h2>6. Contato</h2>
-      <p>Duvidas sobre privacidade podem ser encaminhadas aos mantenedores do projeto no GitHub.</p>
-    </main>
-  );
+  return <main className="legal-page"><header className="legal-header"><p className="eyebrow">Transparência e controle</p><h1>Política de Privacidade e Cookies</h1><p className="muted">Última atualização: 14 de junho de 2026</p></header><article className="panel legal-card">{sections.map(([title, content]) => <section className="legal-section" key={title}><h2>{title}</h2>{content}</section>)}</article></main>;
 }

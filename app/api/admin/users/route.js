@@ -1,15 +1,16 @@
 import { getSql } from '../../../../lib/db';
-import { auth } from '../../../../auth';
+import { getCurrentAdmin } from '../../../../lib/admin';
+import { serviceUnavailable } from '../../../../lib/api-errors';
 
 export const dynamic = 'force-dynamic';
 
 // GET /api/admin/users -> lista usuarios (somente admin).
 export async function GET() {
-  const session = await auth();
-  if (!session || !session.user || !session.user.isAdmin) {
-    return Response.json({ error: 'Acesso restrito a administradores.' }, { status: 403 });
-  }
   try {
+    const admin = await getCurrentAdmin();
+    if (!admin) {
+      return Response.json({ error: 'Acesso restrito a administradores.' }, { status: 403 });
+    }
     const sql = getSql();
     const rows = await sql`
       SELECT id, github_id AS "githubId", username, display_name AS "displayName",
@@ -19,6 +20,6 @@ export async function GET() {
       FROM users ORDER BY id`;
     return Response.json(rows);
   } catch (err) {
-    return Response.json({ error: String(err.message || err) }, { status: 503 });
+    return serviceUnavailable('admin.users.get', err);
   }
 }

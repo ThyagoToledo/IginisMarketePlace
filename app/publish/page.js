@@ -1,146 +1,88 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 export default function PublishPage() {
   const [me, setMe] = useState(null);
-  const [form, setForm] = useState({
-    type: 'plugin',
-    name: '',
-    description: '',
-    version: '1.0.0',
-    gitUrl: '',
-    dependencies: 'None',
-    coverImageText: '',
-  });
+  const [form, setForm] = useState({ type: 'plugin', name: '', description: '', version: '1.0.0', gitUrl: '', dependencies: 'None', coverImageText: '' });
   const [accept, setAccept] = useState(false);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
+  const basicComplete = useMemo(() => form.name.trim().length >= 3 && form.description.trim().length > 0 && form.gitUrl.trim().length > 0, [form]);
 
   useEffect(() => {
-    fetch('/api/me')
-      .then((r) => r.json())
-      .then(setMe)
-      .catch(() => setMe({ authenticated: false }));
+    fetch('/api/me').then((response) => response.json()).then(setMe).catch(() => setMe({ authenticated: false }));
   }, []);
 
-  function update(field, value) {
-    setForm((f) => ({ ...f, [field]: value }));
-  }
+  function update(field, value) { setForm((current) => ({ ...current, [field]: value })); }
 
-  async function submit(e) {
-    e.preventDefault();
+  async function submit(event) {
+    event.preventDefault();
     setBusy(true);
     setResult(null);
     try {
-      const res = await fetch('/api/items', {
+      const response = await fetch('/api/items', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, acceptTerms: accept }),
       });
-      const data = await res.json();
-      setResult({ status: res.status, data });
-    } catch (err) {
-      setResult({ status: 0, data: { error: String(err) } });
+      setResult({ status: response.status, data: await response.json() });
+    } catch {
+      setResult({ status: 0, data: { error: 'Falha de rede ao publicar. Tente novamente.' } });
     } finally {
       setBusy(false);
     }
   }
 
-  if (me === null) {
-    return <main className="container"><p>Carregando…</p></main>;
-  }
-
-  if (!me.authenticated) {
-    return (
-      <main className="container">
-        <h1>Publicar um pacote</h1>
-        <div className="empty">
-          Voce precisa <strong>entrar com o GitHub</strong> para publicar.
-          Use o botao no topo da pagina.
-        </div>
-      </main>
-    );
-  }
-
-  if (me.isBanned) {
-    return (
-      <main className="container">
-        <h1>Publicar um pacote</h1>
-        <div className="empty">Sua conta foi banida do marketplace.</div>
-      </main>
-    );
-  }
+  if (me === null) return <main className="page-container"><div className="empty-state"><strong>Preparando a área de publicação…</strong></div></main>;
+  if (!me.authenticated) return <main className="page-container"><div className="page-heading"><p className="eyebrow">Forge para criadores</p><h1>Publicar novo recurso</h1></div><div className="panel form-section"><h2>Entre com sua conta GitHub</h2><p className="muted">A autoria, a moderação e os tokens do editor usam uma identidade GitHub única. Use o botão “Entrar” no topo para continuar.</p></div></main>;
+  if (me.isBanned) return <main className="page-container"><div className="panel form-section"><h1>Publicação indisponível</h1><p className="muted">Sua conta está impedida de publicar no marketplace.</p></div></main>;
 
   return (
-    <main className="container">
-      <h1>Publicar um pacote</h1>
-      <p className="muted">
-        Enviamos apenas a <strong>URL do repositorio Git</strong> — nunca arquivos.
-        Toda submissao passa por uma verificacao de seguranca automatica.
-      </p>
+    <main className="page-container page-container-wide">
+      <div className="page-heading"><p className="eyebrow">Forge para criadores</p><h1>Publicar novo recurso</h1><p>Liste seu pacote por meio de um repositório Git público. A Forge não recebe nem hospeda arquivos binários.</p></div>
+      <form className="form-shell" onSubmit={submit}>
+        <div>
+          <section className="panel form-section">
+            <h2>Informações gerais</h2>
+            <div className="form-grid">
+              <label className="field field-full">Nome do recurso *<input value={form.name} onChange={(e) => update('name', e.target.value)} required minLength={3} maxLength={80} placeholder="Ex.: Sistema de partículas 2D" /></label>
+              <label className="field">Categoria *<select value={form.type} onChange={(e) => update('type', e.target.value)}><option value="plugin">Plugin</option><option value="workshop">Workshop</option><option value="asset">Arte & Asset</option></select></label>
+              <label className="field">Versão *<input value={form.version} onChange={(e) => update('version', e.target.value)} required placeholder="1.0.0" /></label>
+              <label className="field field-full">Descrição *<textarea value={form.description} onChange={(e) => update('description', e.target.value)} required maxLength={500} placeholder="Explique o que o recurso oferece, como funciona e para quem ele é indicado." /></label>
+            </div>
+          </section>
 
-      <form className="form" onSubmit={submit}>
-        <label>Tipo
-          <select value={form.type} onChange={(e) => update('type', e.target.value)}>
-            <option value="plugin">plugin</option>
-            <option value="workshop">workshop</option>
-            <option value="asset">asset</option>
-          </select>
-        </label>
-        <label>Nome
-          <input value={form.name} onChange={(e) => update('name', e.target.value)} required maxLength={80} />
-        </label>
-        <label>Descricao
-          <textarea value={form.description} onChange={(e) => update('description', e.target.value)} maxLength={500} rows={3} />
-        </label>
-        <label>Versao
-          <input value={form.version} onChange={(e) => update('version', e.target.value)} placeholder="1.0.0" />
-        </label>
-        <label>URL do repositorio Git
-          <input value={form.gitUrl} onChange={(e) => update('gitUrl', e.target.value)} required placeholder="https://github.com/usuario/repo.git" />
-        </label>
-        <label>Dependencias
-          <input value={form.dependencies} onChange={(e) => update('dependencies', e.target.value)} placeholder="None" />
-        </label>
-        <label>Texto da capa (curto)
-          <input value={form.coverImageText} onChange={(e) => update('coverImageText', e.target.value)} maxLength={40} />
-        </label>
+          <section className="panel form-section">
+            <h2>Fonte e compatibilidade</h2>
+            <div className="form-grid">
+              <label className="field field-full">URL do repositório Git *<input value={form.gitUrl} onChange={(e) => update('gitUrl', e.target.value)} required placeholder="https://github.com/usuario/repositorio.git" /></label>
+              <label className="field">Dependências<input value={form.dependencies} onChange={(e) => update('dependencies', e.target.value)} placeholder="None" /></label>
+              <label className="field">Texto curto da capa<input value={form.coverImageText} onChange={(e) => update('coverImageText', e.target.value)} maxLength={40} placeholder="Physics Plugin" /></label>
+            </div>
+          </section>
 
-        <label className="checkbox">
-          <input type="checkbox" checked={accept} onChange={(e) => setAccept(e.target.checked)} />
-          <span>
-            Li e concordo com os <Link href="/terms">Termos de Servico</Link> e a{' '}
-            <Link href="/privacy">Politica de Privacidade</Link>, e declaro que o conteudo
-            do repositorio e de minha responsabilidade.
-          </span>
-        </label>
-
-        <button className="btn-gh" type="submit" disabled={busy || !accept}>
-          {busy ? 'Verificando…' : 'Publicar'}
-        </button>
-      </form>
-
-      {result && (
-        <div className={result.status === 201 ? 'result-ok' : 'result-err'}>
-          {result.status === 201 ? (
-            <>
-              <strong>✓ Publicado com sucesso!</strong>
-              {result.data.warnings?.length > 0 && (
-                <ul>{result.data.warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>
-              )}
-            </>
-          ) : (
-            <>
-              <strong>✗ {result.data.error || 'Falha ao publicar.'}</strong>
-              {result.data.report?.reasons?.length > 0 && (
-                <ul>{result.data.report.reasons.map((r, i) => <li key={i}>{r}</li>)}</ul>
-              )}
-            </>
-          )}
+          <section className="panel form-section">
+            <h2>Responsabilidade e moderação</h2>
+            <label className="check-field"><input type="checkbox" checked={accept} onChange={(e) => setAccept(e.target.checked)} /><span>Li e concordo com os <Link href="/terms">Termos de Serviço</Link> e a <Link href="/privacy">Política de Privacidade</Link>. Declaro que posso publicar este conteúdo e que o repositório é de minha responsabilidade.</span></label>
+            {result && <div className={result.status === 201 ? 'result-ok' : 'result-err'}>{result.status === 201 ? <><strong>Recurso publicado com sucesso.</strong>{result.data.warnings?.map((warning) => <p key={warning}>{warning}</p>)}</> : <><strong>{result.data.error || 'Não foi possível publicar.'}</strong>{result.data.report?.reasons?.map((reason) => <p key={reason}>{reason}</p>)}</>}</div>}
+          </section>
         </div>
-      )}
+
+        <aside className="panel publish-status">
+          <h2>Status da publicação</h2>
+          <div className="status-list">
+            <div className="status-row"><span>Tipo de distribuição</span><strong className="ok">URL Git</strong></div>
+            <div className="status-row"><span>Informações básicas</span><strong className={basicComplete ? 'ok' : 'warn'}>{basicComplete ? 'Pronto' : 'Pendente'}</strong></div>
+            <div className="status-row"><span>Aceite legal</span><strong className={accept ? 'ok' : 'warn'}>{accept ? 'Aceito' : 'Obrigatório'}</strong></div>
+            <div className="status-row"><span>Gate de segurança</span><strong>Automático</strong></div>
+          </div>
+          <button className="button button-ghost button-block" type="button">Salvar rascunho</button>
+          <button className="button button-primary button-block" type="submit" disabled={busy || !accept || !basicComplete} style={{ marginTop: 10 }}>{busy ? 'Verificando repositório…' : 'Publicar recurso'}</button>
+          <p className="muted" style={{ margin: '14px 0 0', fontSize: 12 }}>A URL deve usar HTTPS e apontar para um repositório público no GitHub, GitLab ou Bitbucket.</p>
+        </aside>
+      </form>
     </main>
   );
 }
