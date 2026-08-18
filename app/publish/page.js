@@ -59,7 +59,15 @@ export default function PublishPage() {
             <div className="form-grid">
               <label className="field field-full">URL do repositório Git *<input value={form.gitUrl} onChange={(e) => update('gitUrl', e.target.value)} required placeholder="https://github.com/usuario/repositorio.git" /></label>
               <label className="field">Dependências<input value={form.dependencies} onChange={(e) => update('dependencies', e.target.value)} placeholder="None" /></label>
-              <label className="field">Texto curto da capa<input value={form.coverImageText} onChange={(e) => update('coverImageText', e.target.value)} maxLength={40} placeholder="Physics Plugin" /></label>
+            </div>
+          </section>
+
+          <section className="panel form-section">
+            <div className="section-heading-inline"><h2>Imagem de capa</h2><span className="wip-badge">WIP</span></div>
+            <p className="muted">A URL de imagem será habilitada após a atualização do banco. Nenhum endereço informado nesta versão seria persistido.</p>
+            <div className="form-grid">
+              <label className="field field-full">URL HTTPS da imagem<input disabled placeholder="Disponível após a atualização do banco" /></label>
+              <label className="field field-full">Texto curto da capa atual<input value={form.coverImageText} onChange={(e) => update('coverImageText', e.target.value)} maxLength={40} placeholder="Physics Plugin" /></label>
             </div>
           </section>
 

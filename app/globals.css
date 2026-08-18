@@ -33,6 +33,7 @@ a { color: inherit; }
 img { display: block; max-width: 100%; }
 button, input, textarea, select { font: inherit; }
 button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
 h1, h2, h3, h4, p { margin-top: 0; }
 h1, h2, h3, .brand { font-family: Sora, Inter, ui-sans-serif, sans-serif; letter-spacing: -.03em; }
 code, pre, .mono { font-family: "JetBrains Mono", "Cascadia Code", Consolas, monospace; }
@@ -79,6 +80,8 @@ code, pre, .mono { font-family: "JetBrains Mono", "Cascadia Code", Consolas, mon
 .empty { padding: 18px; border: 1px dashed var(--border); border-radius: 8px; color: var(--muted); }
 .chip { padding: 5px 8px; border: 1px solid rgba(255, 181, 160, .16); border-radius: 999px; background: rgba(14, 14, 14, .82); color: var(--primary-soft); font-size: 11px; font-weight: 800; text-transform: uppercase; }
 .panel { border: 1px solid var(--border-soft); border-radius: 14px; background: rgba(32, 31, 31, .94); box-shadow: var(--shadow); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.wip-badge { width: max-content; padding: 5px 9px; display: inline-flex; border: 1px solid rgba(255, 207, 112, .3); border-radius: 999px; background: rgba(255, 207, 112, .08); color: var(--gold); font-size: 10px; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
 
 /* Marketplace */
 .marketplace-layout { width: min(100%, var(--max)); margin: 0 auto; display: grid; grid-template-columns: 250px minmax(0, 1fr); }
@@ -181,6 +184,8 @@ code, pre, .mono { font-family: "JetBrains Mono", "Cascadia Code", Consolas, mon
 .form-shell { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 28px; align-items: start; }
 .form-section { margin-bottom: 22px; padding: 28px; }
 .form-section h2 { padding-bottom: 14px; border-bottom: 1px solid var(--border-soft); color: var(--primary-soft); }
+.section-heading-inline { padding-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--border-soft); }
+.form-section .section-heading-inline h2 { margin: 0; padding: 0; border: 0; }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .field { display: grid; gap: 7px; color: #dfc4bd; font-size: 13px; font-weight: 650; }
 .field-full { grid-column: 1 / -1; }
@@ -274,14 +279,29 @@ code, pre, .mono { font-family: "JetBrains Mono", "Cascadia Code", Consolas, mon
 .admin-sidebar { min-height: calc(100vh - 74px); padding: 30px 18px; border-right: 1px solid var(--border-soft); background: var(--surface-low); }
 .admin-sidebar h2 { color: var(--primary-soft); }
 .admin-sidebar nav { margin-top: 30px; display: grid; gap: 7px; }
-.admin-sidebar nav span { padding: 12px; border-radius: 8px; color: var(--muted); }
-.admin-sidebar nav span.active { background: rgba(255, 87, 34, .16); color: var(--primary-soft); box-shadow: inset 3px 0 var(--primary); }
+.admin-sidebar nav a { padding: 12px; border-radius: 8px; color: var(--muted); text-decoration: none; }
+.admin-sidebar nav a:hover { background: rgba(255, 255, 255, .035); color: var(--text); }
+.admin-sidebar nav a.active { background: rgba(255, 87, 34, .16); color: var(--primary-soft); box-shadow: inset 3px 0 var(--primary); }
+.admin-sidebar nav a > span { width: 20px; display: inline-block; }
 .admin-content { padding: 42px; }
 .admin-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
 .admin-stat { padding: 22px; }
 .admin-stat span { color: var(--muted); }
 .admin-stat strong { margin-top: 9px; display: block; font-size: 34px; }
+.admin-stat-wip strong { color: var(--gold); font-size: 22px; }
 .admin-panel { margin-top: 24px; padding: 24px; overflow-x: auto; }
+.admin-panel-first { margin-top: 0; }
+.admin-wip, .public-wip { padding: clamp(30px, 5vw, 54px); text-align: center; }
+.admin-wip .wip-badge, .public-wip .wip-badge { margin: 0 auto 18px; }
+.admin-wip h2, .public-wip h2 { margin-bottom: 10px; }
+.admin-wip p, .public-wip p { max-width: 680px; margin-right: auto; margin-left: auto; }
+.public-wip .button { margin-top: 10px; }
+.admin-toolbar { margin-bottom: 20px; display: grid; grid-template-columns: minmax(240px, 1fr) 190px auto; gap: 10px; }
+.admin-toolbar input, .admin-toolbar select { width: 100%; height: 44px; border: 1px solid var(--border); border-radius: 8px; outline: 0; background: #151515; color: var(--text); }
+.admin-toolbar input { padding: 0 13px; }
+.admin-toolbar select { padding: 0 10px; }
+.admin-toolbar input:focus, .admin-toolbar select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 87, 34, .12); }
+.admin-table-wrap { overflow-x: auto; }
 .admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .admin-table th, .admin-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-soft); text-align: left; }
 .admin-table th { color: var(--muted); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; }
@@ -290,6 +310,21 @@ code, pre, .mono { font-family: "JetBrains Mono", "Cascadia Code", Consolas, mon
 .btn-ghost { background: var(--surface-high); color: var(--text); }
 .btn-danger { background: #8f261d; color: #fff; }
 .btn-gh { border-color: transparent; background: var(--primary); color: #fff; }
+.btn-ghost:disabled, .btn-danger:disabled { cursor: not-allowed; opacity: .45; }
+.admin-pagination { margin-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 13px; }
+.admin-pagination > div { display: flex; gap: 8px; }
+.system-stack { display: grid; gap: 24px; }
+.system-value { font-size: 22px !important; }
+.system-value.ok, .system-list .ok { color: var(--green); }
+.system-value.warn, .system-list .warn { color: var(--gold); }
+.system-list { display: grid; }
+.system-list > div { padding: 13px 0; display: flex; align-items: center; justify-content: space-between; gap: 18px; border-bottom: 1px solid var(--border-soft); }
+.system-list > div:last-child { border-bottom: 0; }
+.system-list span { color: var(--muted); }
+.system-checked { margin: 18px 0 0; color: var(--muted); font-size: 12px; }
+.report-wip-body { padding-top: 36px; padding-bottom: 36px; text-align: center; }
+.report-wip-body .wip-badge { margin: 0 auto 16px; }
+.report-wip-body p { max-width: 440px; margin: 0 auto; }
 
 /* Legal */
 .legal-page { width: min(840px, calc(100% - 40px)); margin: 0 auto; padding: 54px 0 80px; }
@@ -371,7 +406,8 @@ code, pre, .mono { font-family: "JetBrains Mono", "Cascadia Code", Consolas, mon
   .forge-sidebar > div:first-child, .forge-sidebar .sidebar-spacer, .forge-sidebar .button, .sidebar-utility { display: none; }
   .forge-sidebar nav { display: flex; overflow-x: auto; }
   .forge-sidebar nav a { min-width: max-content; }
-  .community-sidebar nav, .settings-sidebar nav { display: flex; overflow-x: auto; }
+  .community-sidebar nav, .settings-sidebar nav, .admin-sidebar nav { display: flex; overflow-x: auto; }
+  .admin-sidebar nav a { min-width: max-content; }
   .community-sidebar { padding: 16px; }
   .community-sidebar > .button { display: none; }
   .community-main, .settings-content, .admin-content { padding: 28px 20px; }
@@ -393,6 +429,8 @@ code, pre, .mono { font-family: "JetBrains Mono", "Cascadia Code", Consolas, mon
   .catalog-toolbar { align-items: flex-start; flex-direction: column; }
   .segmented { max-width: 100%; overflow-x: auto; }
   .form-grid { grid-template-columns: 1fr; }
+  .admin-toolbar { grid-template-columns: 1fr; }
+  .admin-pagination { align-items: flex-start; flex-direction: column; }
   .field-full { grid-column: auto; }
   .detail-main-image { height: 300px; }
   .thumb-row div { height: 62px; }
