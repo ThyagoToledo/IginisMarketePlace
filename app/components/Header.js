@@ -22,7 +22,7 @@ export default async function Header() {
           {user?.isAdmin && <Link href="/admin">Admin</Link>}
           {user ? (
             <span className="user-box">
-              <Link href="/account" aria-label="Minha conta">
+              <Link href={user.login ? `/creators/${encodeURIComponent(user.login)}` : '/account'} aria-label="Meu perfil público">
                 {user.image ? <img className="avatar" src={user.image} alt="" /> : <span className="avatar avatar-fallback">◎</span>}
               </Link>
               <form
