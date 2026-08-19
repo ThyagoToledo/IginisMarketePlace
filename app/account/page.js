@@ -1,5 +1,6 @@
 import { auth } from '../../auth';
 import AccountTokens from './AccountTokens';
+import OrganizationInvitations from './OrganizationInvitations';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +23,7 @@ export default async function AccountPage() {
           <p className="muted">@{session.user.login || session.user.name}</p>
           <p className="muted">Identidade vinculada ao GitHub. Seus pacotes e tokens usam esta conta como fonte de autoria.</p>
         </aside>
-        <section className="panel account-content"><AccountTokens /></section>
+        <section className="panel account-content"><OrganizationInvitations /><AccountTokens /></section>
       </div>
     </main>
   );

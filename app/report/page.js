@@ -1,26 +1,7 @@
 'use client';
-
-import { useRouter } from 'next/navigation';
-
-export default function ReportPage() {
-  const router = useRouter();
-
-  return (
-    <main className="modal-page">
-      <section className="panel report-dialog" role="dialog" aria-modal="true" aria-labelledby="report-title">
-        <header className="dialog-header">
-          <h2 id="report-title">⚑ Reportar conteúdo</h2>
-          <button className="icon-button" type="button" onClick={() => router.back()} aria-label="Fechar">×</button>
-        </header>
-        <div className="dialog-body report-wip-body">
-          <span className="wip-badge">WIP</span>
-          <h3>Envio de relatos ainda indisponível</h3>
-          <p className="muted">A Forge não simula o envio nem mantém denúncias apenas nesta sessão. O formulário será habilitado quando a persistência de moderação estiver disponível.</p>
-        </div>
-        <footer className="dialog-footer">
-          <button className="button button-primary" type="button" onClick={() => router.back()}>Voltar</button>
-        </footer>
-      </section>
-    </main>
-  );
-}
+import { useSearchParams,useRouter } from 'next/navigation';
+import { Suspense,useState } from 'react';
+const TARGETS=[['item','item'],['user','user'],['organization','organization']];
+const REASONS=[['spam','Spam ou fraude'],['harassment','Assédio ou abuso'],['copyright','Direitos autorais'],['inappropriate','Conteúdo impróprio'],['other','Outro']];
+export default function ReportPage(){return <Suspense fallback={<main className="modal-page"><div className="empty-state"><strong>Preparando relato…</strong></div></main>}><ReportDialog/></Suspense>}
+function ReportDialog(){const params=useSearchParams();const router=useRouter();const target=TARGETS.map(([key,type])=>({targetType:type,targetId:Number(params.get(key))})).find(x=>Number.isSafeInteger(x.targetId)&&x.targetId>0);const[reason,setReason]=useState('spam');const[details,setDetails]=useState('');const[result,setResult]=useState(null);const[busy,setBusy]=useState(false);async function submit(e){e.preventDefault();setBusy(true);const r=await fetch('/api/reports',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...target,reason,details})});const data=await r.json();setBusy(false);setResult({ok:r.ok,message:r.ok?'Relato enviado para revisão manual.':data.error})}return <main className="modal-page"><section className="panel report-dialog"><header className="dialog-header"><h2>⚑ Reportar conteúdo</h2><button className="icon-button" onClick={()=>router.back()} aria-label="Fechar">×</button></header>{!target?<div className="dialog-body report-wip-body"><h3>Este conteúdo ainda não pode ser denunciado</h3><p className="muted">Relatos estão disponíveis para criações, perfis e organizações.</p></div>:<form onSubmit={submit}><div className="dialog-body"><p>O relato será analisado manualmente pela equipe de moderação.</p><div className="report-options">{REASONS.map(([value,label])=><label key={value}><input type="radio" name="reason" value={value} checked={reason===value} onChange={()=>setReason(value)}/>{label}</label>)}</div><label className="field">Detalhes opcionais<textarea maxLength={4000} value={details} onChange={e=>setDetails(e.target.value)} placeholder="Inclua contexto que ajude a revisão."/></label>{result&&<p className={result.ok?'result-ok':'result-err'}>{result.message}</p>}</div><footer className="dialog-footer"><button className="button button-ghost" type="button" onClick={()=>router.back()}>Cancelar</button><button className="button button-primary" disabled={busy||result?.ok}>{busy?'Enviando…':'Enviar relato'}</button></footer></form>}</section></main>}

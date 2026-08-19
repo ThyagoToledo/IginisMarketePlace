@@ -94,8 +94,10 @@ code, pre, .mono { font-family: "JetBrains Mono", "Cascadia Code", Consolas, mon
 .sidebar-spacer { flex: 1; }
 .sidebar-utility { padding: 12px 5px 0; color: var(--muted); font-size: 13px; text-decoration: none; }
 .marketplace-content { min-width: 0; padding: 28px 28px 64px; }
-.marketplace-hero { min-height: 405px; padding: 48px; display: flex; align-items: flex-end; border: 1px solid var(--border-soft); border-radius: 16px; background-position: center; background-size: cover; overflow: hidden; }
-.marketplace-hero > div { max-width: 720px; }
+.marketplace-hero { position: relative; min-height: 405px; padding: 48px; display: flex; align-items: flex-end; border: 1px solid var(--border-soft); border-radius: 16px; overflow: hidden; }
+.marketplace-hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(6,6,6,.94), rgba(6,6,6,.35) 70%, rgba(6,6,6,.15)); }
+.marketplace-hero > div { position: relative; z-index: 2; max-width: 720px; }
+.marketplace-hero .marketplace-hero-artwork { position: absolute; inset: 0; }
 .hero-kicker { padding: 6px 10px; border-radius: 999px; background: var(--primary); font-size: 11px; font-weight: 850; letter-spacing: .05em; text-transform: uppercase; }
 .marketplace-hero h1 { margin: 18px 0 10px; font-size: clamp(35px, 5vw, 60px); line-height: 1.02; }
 .marketplace-hero p { max-width: 690px; margin-bottom: 22px; color: #e6ccc5; font-size: 17px; }
@@ -114,6 +116,7 @@ code, pre, .mono { font-family: "JetBrains Mono", "Cascadia Code", Consolas, mon
 .asset-artwork small { margin-bottom: auto; color: rgba(255,255,255,.55); font-family: "JetBrains Mono", monospace; font-size: 9px; letter-spacing: .16em; }
 .asset-artwork strong { max-width: 80%; font-family: Sora, sans-serif; font-size: 22px; line-height: 1.05; }
 .asset-artwork > span { margin-top: 5px; color: rgba(255,255,255,.66); font-size: 11px; }
+.asset-cover-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .asset-card .asset-artwork { transition: transform .4s ease; }
 .asset-card:hover .asset-artwork { transform: scale(1.035); }
 .asset-card-media .chip { position: absolute; top: 10px; right: 10px; }
@@ -261,6 +264,18 @@ code, pre, .mono { font-family: "JetBrains Mono", "Cascadia Code", Consolas, mon
 .team-card, .activity-card { padding: 22px; }
 .team-member { padding: 12px 0; display: flex; align-items: center; gap: 11px; border-top: 1px solid var(--border-soft); }
 .team-member small { display: block; color: var(--muted); }
+.organization-list { display: grid; gap: 14px; }
+.organization-card { padding: 20px; display: flex; align-items: center; gap: 18px; text-decoration: none; }
+.organization-card:hover { border-color: rgba(255,87,34,.48); }
+.organization-card h2, .organization-card p { margin-bottom: 4px; }
+.org-mini-avatar { width: 72px; height: 72px; flex: 0 0 auto; border-width: 2px; font-size: 20px; }
+.settings-stack { display: grid; gap: 20px; }
+.member-management, .invitation-row { padding: 12px 0; display: flex; align-items: center; justify-content: space-between; gap: 14px; border-top: 1px solid var(--border-soft); }
+.member-management span, .invitation-row span { display: grid; }
+.member-management small, .invitation-row small { color: var(--muted); }
+.member-management select { padding: 8px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface-low); color: var(--text); }
+.account-invitations { margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid var(--border-soft); }
+.invitation-row > div { display: flex; gap: 8px; }
 
 /* Settings */
 .settings-layout { width: min(100%, var(--max)); margin: 0 auto; display: grid; grid-template-columns: 260px minmax(0, 1fr); }
@@ -325,6 +340,11 @@ code, pre, .mono { font-family: "JetBrains Mono", "Cascadia Code", Consolas, mon
 .report-wip-body { padding-top: 36px; padding-bottom: 36px; text-align: center; }
 .report-wip-body .wip-badge { margin: 0 auto 16px; }
 .report-wip-body p { max-width: 440px; margin: 0 auto; }
+.report-admin-list { display: grid; gap: 14px; }
+.report-admin-card { padding: 18px; display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; border: 1px solid var(--border-soft); border-radius: 10px; background: var(--surface-low); }
+.report-admin-card h3 { margin: 12px 0 6px; }
+.report-admin-card p { margin-bottom: 8px; color: var(--muted); }
+.report-admin-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
 /* Legal */
 .legal-page { width: min(840px, calc(100% - 40px)); margin: 0 auto; padding: 54px 0 80px; }

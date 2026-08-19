@@ -4,6 +4,8 @@ import AssetArtwork from './AssetArtwork';
 
 export default function MarketplaceCard({ item, index = 0 }) {
   const owner = item.ownerUsername && item.ownerUsername !== 'legacy' ? item.ownerUsername : item.author;
+  const publisherName = item.organizationName || owner;
+  const publisherHref = item.organizationSlug ? `/organizations/${encodeURIComponent(item.organizationSlug)}` : `/creators/${encodeURIComponent(owner)}`;
   return (
     <article className="asset-card">
       <Link href={`/assets/${item.id}`} className="asset-card-media">
@@ -18,7 +20,7 @@ export default function MarketplaceCard({ item, index = 0 }) {
       </Link>
       <div className="asset-card-body">
         <Link href={`/assets/${item.id}`} className="asset-card-title">{item.name}</Link>
-        <Link href={`/creators/${encodeURIComponent(owner)}`} className="asset-card-author">◎ {owner}</Link>
+        <Link href={publisherHref} className="asset-card-author">◎ {publisherName}</Link>
         <p>{item.description}</p>
         <div className="asset-card-meta">
           <span>v{item.version}</span>

@@ -15,14 +15,14 @@ export async function GET(_request, { params }) {
     }
     const rows = await sql`
       SELECT i.id, i.type, i.name, i.author, i.description, i.version,
-             i.git_url AS "gitUrl", i.cover_image_text AS "coverImageText",
+             i.git_url AS "gitUrl", i.cover_image_text AS "coverImageText", i.cover_image_url AS "coverImageUrl",
              i.dependencies, i.downloads, i.status, i.author_id AS "authorId",
              i.created_at AS "createdAt",
              EXISTS (SELECT 1 FROM item_promotions p WHERE p.item_id = i.id AND p.kind = 'ignis') AS "ignisFeatured",
              EXISTS (SELECT 1 FROM item_promotions p WHERE p.item_id = i.id AND p.kind = 'sponsored') AS "sponsoredFeatured"
-      FROM items i LEFT JOIN users u ON u.id = i.author_id
+      FROM items i LEFT JOIN users u ON u.id = i.author_id LEFT JOIN organizations o ON o.id=i.organization_id
       WHERE i.id = ${id} AND i.status = 'approved'
-        AND COALESCE(u.is_banned, false) = false`;
+        AND ((i.organization_id IS NULL AND COALESCE(u.is_banned,false)=false) OR (i.organization_id IS NOT NULL AND COALESCE(o.is_banned,false)=false))`;
     if (rows.length === 0) {
       return Response.json({ error: 'Pacote nao encontrado.' }, { status: 404 });
     }
@@ -47,9 +47,8 @@ export async function POST(request, { params }) {
     const rows = await sql`
       UPDATE items i SET downloads = i.downloads + 1
       WHERE i.id = ${id} AND i.status = 'approved'
-        AND NOT EXISTS (
-          SELECT 1 FROM users u WHERE u.id = i.author_id AND u.is_banned = true
-        )
+        AND ((i.organization_id IS NULL AND NOT EXISTS (SELECT 1 FROM users u WHERE u.id=i.author_id AND u.is_banned=true))
+          OR (i.organization_id IS NOT NULL AND EXISTS (SELECT 1 FROM organizations o WHERE o.id=i.organization_id AND o.is_banned=false)))
       RETURNING i.id, i.downloads`;
     if (rows.length === 0) {
       return Response.json({ error: 'Pacote nao encontrado.' }, { status: 404 });
@@ -78,7 +77,7 @@ export async function DELETE(request, { params }) {
       return Response.json({ error: 'Requisicao invalida.' }, { status: 400 });
     }
     const [rows, users] = await Promise.all([
-      sql`SELECT author_id FROM items WHERE id = ${id}`,
+      sql`SELECT author_id, organization_id FROM items WHERE id = ${id}`,
       sql`SELECT is_admin, is_banned FROM users WHERE id = ${userId}`,
     ]);
     if (rows.length === 0) {
@@ -87,8 +86,9 @@ export async function DELETE(request, { params }) {
     if (!users[0] || users[0].is_banned) {
       return Response.json({ error: 'Sem permissao.' }, { status: 403 });
     }
-    const isOwner = Number(rows[0].author_id) === userId;
-    if (!users[0].is_admin && !isOwner) {
+    const isOwner = !rows[0].organization_id && Number(rows[0].author_id) === userId;
+    const organizationManager = rows[0].organization_id ? await sql`SELECT 1 FROM organization_members m JOIN organizations o ON o.id=m.organization_id WHERE m.organization_id=${rows[0].organization_id} AND m.user_id=${userId} AND m.status='active' AND m.role IN ('owner','admin') AND o.is_banned=false` : [];
+    if (!users[0].is_admin && !isOwner && !organizationManager[0]) {
       return Response.json({ error: 'Sem permissao.' }, { status: 403 });
     }
     await sql`DELETE FROM items WHERE id = ${id}`;

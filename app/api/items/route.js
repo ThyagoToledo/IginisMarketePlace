@@ -2,6 +2,9 @@ import { getSql } from '../../../lib/db';
 import { resolveUser } from '../../../lib/apiauth';
 import { validateSubmission } from '../../../lib/security';
 import { rejectCrossOriginMutation, serviceUnavailable } from '../../../lib/api-errors';
+import { validateCoverImageUrl } from '../../../lib/cover-images.mjs';
+import { getOrganizationAccess, hasOrganizationRole } from '../../../lib/organization-access';
+import { parseOrganizationId } from '../../../lib/organizations.mjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,16 +22,20 @@ export async function GET(request) {
 
     const rows = await sql`
       SELECT i.id, i.type, i.name, i.author, i.description, i.version,
-             i.git_url AS "gitUrl", i.cover_image_text AS "coverImageText",
+             i.git_url AS "gitUrl", i.cover_image_text AS "coverImageText", i.cover_image_url AS "coverImageUrl",
              i.dependencies, i.downloads, i.status, i.created_at AS "createdAt",
              u.username AS "ownerUsername", u.avatar_url AS "ownerAvatar",
+             o.slug AS "organizationSlug", o.name AS "organizationName",
              EXISTS (SELECT 1 FROM item_promotions p WHERE p.item_id = i.id AND p.kind = 'ignis') AS "ignisFeatured",
              EXISTS (SELECT 1 FROM item_promotions p WHERE p.item_id = i.id AND p.kind = 'sponsored') AS "sponsoredFeatured"
       FROM items i LEFT JOIN users u ON u.id = i.author_id
-      WHERE i.status = 'approved' AND COALESCE(u.is_banned, false) = false
+      LEFT JOIN organizations o ON o.id = i.organization_id
+      WHERE i.status = 'approved'
+        AND ((i.organization_id IS NULL AND COALESCE(u.is_banned, false) = false)
+          OR (i.organization_id IS NOT NULL AND COALESCE(o.is_banned, false) = false))
         AND (${type}::text IS NULL OR i.type = ${type})
         AND (${like}::text IS NULL OR (
-          i.name ILIKE ${like} OR i.description ILIKE ${like} OR i.author ILIKE ${like}
+          i.name ILIKE ${like} OR i.description ILIKE ${like} OR i.author ILIKE ${like} OR o.name ILIKE ${like}
         ))
       ORDER BY i.downloads DESC, i.created_at DESC`;
     return Response.json(rows);
@@ -73,6 +80,19 @@ export async function POST(request) {
       );
     }
 
+    const cover = validateCoverImageUrl(body.coverImageUrl);
+    if (!cover.ok) return Response.json({ error: cover.error }, { status: 400 });
+    const organizationId = body.organizationId ? parseOrganizationId(body.organizationId) : null;
+    if (body.organizationId && !organizationId) {
+      return Response.json({ error: 'Organização inválida.' }, { status: 400 });
+    }
+    if (organizationId) {
+      const access = await getOrganizationAccess(user.id, { id: organizationId });
+      if (!hasOrganizationRole(access)) {
+        return Response.json({ error: 'Você precisa ser proprietário ou administrador ativo da organização.' }, { status: 403 });
+      }
+    }
+
     // Gate de seguranca: campos + repositorio Git.
     const report = await validateSubmission(body);
     if (!report.ok) {
@@ -91,16 +111,17 @@ export async function POST(request) {
 
     const rows = await sql`
       INSERT INTO items
-        (type, name, author, description, version, git_url, cover_image_text,
-         dependencies, author_id, status, security_report)
+        (type, name, author, description, version, git_url, cover_image_text, cover_image_url,
+         dependencies, author_id, organization_id, status, security_report)
       VALUES
         (${body.type}, ${String(body.name).trim()}, ${authorName},
          ${body.description || ''}, ${body.version || '1.0.0'}, ${String(body.gitUrl).trim()},
-         ${body.coverImageText || ''}, ${body.dependencies || 'None'},
-         ${user.id}, 'approved', ${JSON.stringify(report)})
+         ${body.coverImageText || ''}, ${cover.value}, ${body.dependencies || 'None'},
+         ${user.id}, ${organizationId}, 'approved', ${JSON.stringify(report)})
       ON CONFLICT (git_url) DO UPDATE SET
         name = EXCLUDED.name, description = EXCLUDED.description,
         version = EXCLUDED.version, cover_image_text = EXCLUDED.cover_image_text,
+        cover_image_url = EXCLUDED.cover_image_url, organization_id = EXCLUDED.organization_id,
         dependencies = EXCLUDED.dependencies, security_report = EXCLUDED.security_report
       WHERE items.author_id = EXCLUDED.author_id
       RETURNING id, type, name, git_url AS "gitUrl", status`;
@@ -111,6 +132,7 @@ export async function POST(request) {
         { status: 409 }
       );
     }
+
     return Response.json({ ok: true, item: rows[0], warnings: report.warnings }, { status: 201 });
   } catch (err) {
     return serviceUnavailable('items.post', err);

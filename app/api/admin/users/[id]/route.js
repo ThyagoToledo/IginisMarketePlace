@@ -34,9 +34,9 @@ export async function POST(request, { params }) {
 
     if (action === 'ban') {
       const reason = String(body.reason || 'Violacao das regras').trim().slice(0, 500);
-      await sql`UPDATE users SET is_banned = true, ban_reason = ${reason} WHERE id = ${id}`;
+      await sql`UPDATE users SET is_banned = true, ban_reason = ${reason}, banned_at = now(), banned_by = ${admin.id} WHERE id = ${id}`;
     } else if (action === 'unban') {
-      await sql`UPDATE users SET is_banned = false, ban_reason = NULL WHERE id = ${id}`;
+      await sql`UPDATE users SET is_banned = false, ban_reason = NULL, banned_at = NULL, banned_by = NULL WHERE id = ${id}`;
     } else {
       return Response.json({ error: 'Acao invalida (use ban ou unban).' }, { status: 400 });
     }

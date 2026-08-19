@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { loadCatalog } from '../lib/catalog';
-import { artworkStyle } from '../lib/presentation';
 import MarketplaceCard from './components/MarketplaceCard';
 import ForgeSidebar from './components/ForgeSidebar';
+import AssetArtwork from './components/AssetArtwork';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +23,8 @@ export default async function Home({ searchParams }) {
         {offline && <div className="status-note">O catálogo está temporariamente indisponível. Nenhuma criação de exemplo é exibida.</div>}
 
         {hero && showHighlights && (
-          <section className="marketplace-hero" style={artworkStyle(hero)}>
+          <section className="marketplace-hero">
+            <AssetArtwork item={hero} className="marketplace-hero-artwork" showLabels={false} />
             <div>
               <span className="hero-kicker">Destaque do Ignis</span>
               <h1>{hero.name}</h1>

@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import MarketplaceCard from '../../components/MarketplaceCard';
 import { loadCreator } from '../../../lib/catalog';
 
@@ -23,7 +24,7 @@ export default async function CreatorPage({ params }) {
         <div className="profile-identity">
           <div className="profile-avatar">{creator.avatarUrl ? <img src={creator.avatarUrl} alt="" /> : creator.username.slice(0, 2).toUpperCase()}</div>
           <div><h1>{creator.displayName || creator.username}</h1><p>@{creator.username} · Criador verificado pelo GitHub</p></div>
-          <div className="profile-actions"><a className="button button-primary" href={`https://github.com/${encodeURIComponent(creator.username)}`} target="_blank" rel="noreferrer">Ver no GitHub</a></div>
+          <div className="profile-actions"><a className="button button-primary" href={`https://github.com/${encodeURIComponent(creator.username)}`} target="_blank" rel="noreferrer">Ver no GitHub</a><Link className="button button-ghost" href={`/report?user=${creator.id}`}>⚑ Reportar</Link></div>
         </div>
       </section>
 

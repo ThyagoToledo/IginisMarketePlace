@@ -15,8 +15,8 @@ export default async function AdminPage() {
         <div className="panel admin-stat"><span>Acessos Git</span><strong>{stats.offline ? '—' : stats.downloads.toLocaleString('pt-BR')}</strong></div>
         <div className="panel admin-stat"><span>Destaques Ignis</span><strong>{stats.offline ? '—' : stats.ignisFeatured}</strong></div>
         <div className="panel admin-stat"><span>Patrocinados</span><strong>{stats.offline ? '—' : stats.sponsoredFeatured}</strong></div>
-        <div className="panel admin-stat admin-stat-wip"><span>Relatos</span><strong>WIP</strong></div>
-        <div className="panel admin-stat admin-stat-wip"><span>Organizações</span><strong>WIP</strong></div>
+        <div className="panel admin-stat"><span>Relatos ativos</span><strong>{stats.offline ? '—' : stats.reports}</strong></div>
+        <div className="panel admin-stat"><span>Organizações ativas</span><strong>{stats.offline ? '—' : stats.organizations}</strong></div>
       </section>
       {stats.offline && <div className="status-note">O banco está indisponível; as estatísticas não foram carregadas.</div>}
       <section className="panel admin-panel"><div className="discussion-header"><div><p className="eyebrow">Curadoria</p><h2>Destaques do marketplace</h2></div><span className="muted">Somente criações reais e aprovadas</span></div><AdminHighlights /></section>

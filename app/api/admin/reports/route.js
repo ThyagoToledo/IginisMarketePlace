@@ -1,0 +1,5 @@
+import { getSql } from '../../../../lib/db';
+import { getCurrentAdmin } from '../../../../lib/admin';
+import { serviceUnavailable } from '../../../../lib/api-errors';
+export const dynamic='force-dynamic';
+export async function GET(request){try{if(!await getCurrentAdmin())return Response.json({error:'Acesso restrito.'},{status:403});const{searchParams}=new URL(request.url);const status=['open','reviewing','resolved','dismissed'].includes(searchParams.get('status'))?searchParams.get('status'):null;const sql=getSql();const rows=await sql`SELECT r.id,r.target_type AS "targetType",r.target_id AS "targetId",r.target_snapshot AS "targetSnapshot",r.reason,r.details,r.status,r.resolution,r.action_taken AS "actionTaken",r.created_at AS "createdAt",u.username AS "reporterUsername",m.username AS "moderatorUsername" FROM reports r LEFT JOIN users u ON u.id=r.reporter_id LEFT JOIN users m ON m.id=r.moderator_id WHERE (${status}::text IS NULL OR r.status=${status}) ORDER BY CASE r.status WHEN 'open' THEN 0 WHEN 'reviewing' THEN 1 ELSE 2 END,r.created_at DESC LIMIT 200`;return Response.json(rows)}catch(error){return serviceUnavailable('admin.reports.get',error)}}

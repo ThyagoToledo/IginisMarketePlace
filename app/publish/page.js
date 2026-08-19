@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export default function PublishPage() {
   const [me, setMe] = useState(null);
-  const [form, setForm] = useState({ type: 'plugin', name: '', description: '', version: '1.0.0', gitUrl: '', dependencies: 'None', coverImageText: '' });
+  const [form, setForm] = useState({ type: 'plugin', name: '', description: '', version: '1.0.0', gitUrl: '', dependencies: 'None', coverImageText: '', coverImageUrl: '', organizationId: '' });
   const [accept, setAccept] = useState(false);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
@@ -63,10 +63,11 @@ export default function PublishPage() {
           </section>
 
           <section className="panel form-section">
-            <div className="section-heading-inline"><h2>Imagem de capa</h2><span className="wip-badge">WIP</span></div>
-            <p className="muted">A URL de imagem será habilitada após a atualização do banco. Nenhum endereço informado nesta versão seria persistido.</p>
+            <h2>Publicador e imagem de capa</h2>
+            <p className="muted">A capa é opcional, deve usar HTTPS e continuará com a arte gerada caso não carregue.</p>
             <div className="form-grid">
-              <label className="field field-full">URL HTTPS da imagem<input disabled placeholder="Disponível após a atualização do banco" /></label>
+              <label className="field field-full">Publicar como<select value={form.organizationId} onChange={(e) => update('organizationId', e.target.value)}><option value="">Meu perfil (@{me.login || me.name})</option>{me.organizations?.map((organization) => <option key={organization.id} value={organization.id}>{organization.name}</option>)}</select></label>
+              <label className="field field-full">URL HTTPS da imagem<input type="url" value={form.coverImageUrl} onChange={(e) => update('coverImageUrl', e.target.value)} maxLength={2048} placeholder="https://exemplo.com/capa.png" /></label>
               <label className="field field-full">Texto curto da capa atual<input value={form.coverImageText} onChange={(e) => update('coverImageText', e.target.value)} maxLength={40} placeholder="Physics Plugin" /></label>
             </div>
           </section>

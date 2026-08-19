@@ -14,8 +14,8 @@ export async function generateMetadata({ params }) {
   return {
     title: item.name,
     description: item.description,
-    openGraph: { title: item.name, description: item.description, images: [] },
-    twitter: { title: item.name, description: item.description, images: [] },
+    openGraph: { title: item.name, description: item.description, images: item.coverImageUrl ? [item.coverImageUrl] : [] },
+    twitter: { title: item.name, description: item.description, images: item.coverImageUrl ? [item.coverImageUrl] : [] },
   };
 }
 
@@ -24,6 +24,8 @@ export default async function AssetPage({ params }) {
   const item = await loadItem(id);
   if (!item) notFound();
   const owner = item.ownerUsername && item.ownerUsername !== 'legacy' ? item.ownerUsername : item.author;
+  const publisherName = item.organizationName || item.ownerDisplayName || owner;
+  const publisherHref = item.organizationSlug ? `/organizations/${encodeURIComponent(item.organizationSlug)}` : `/creators/${encodeURIComponent(owner)}`;
 
   return (
     <main className="page-container">
@@ -49,11 +51,11 @@ export default async function AssetPage({ params }) {
             </div>
           </section>
           <section className="panel creator-summary">
-            <h3>Criador</h3>
+            <h3>{item.organizationSlug ? 'Organização publicadora' : 'Criador'}</h3>
             <div className="creator-line">
               {item.ownerAvatar ? <img className="avatar" src={item.ownerAvatar} alt="" /> : <span className="avatar avatar-fallback">◎</span>}
-              <div><strong>{item.ownerDisplayName || owner}</strong><small>@{owner}</small></div>
-              <Link className="button button-outline" href={`/creators/${encodeURIComponent(owner)}`}>Ver perfil</Link>
+              <div><strong>{publisherName}</strong><small>@{item.organizationSlug || owner}</small></div>
+              <Link className="button button-outline" href={publisherHref}>Ver perfil</Link>
             </div>
           </section>
         </aside>
