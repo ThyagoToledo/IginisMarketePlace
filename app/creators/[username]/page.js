@@ -3,6 +3,8 @@ import Link from 'next/link';
 import MarketplaceCard from '../../components/MarketplaceCard';
 import { loadCreator } from '../../../lib/catalog';
 import { auth } from '../../../auth';
+import { buildActivityCalendar } from '../../../lib/activity.mjs';
+import ProfileActivity from './ProfileActivity';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +23,7 @@ export default async function CreatorPage({ params }) {
   if (!creator) notFound();
   const downloads = creator.items.reduce((total, item) => total + Number(item.downloads || 0), 0);
   const isOwnProfile = Number(creator.id) === Number(session?.user?.id);
+  const activity = buildActivityCalendar(creator.activityRows);
 
   return (
     <main className="page-container page-container-wide">
@@ -41,8 +44,10 @@ export default async function CreatorPage({ params }) {
       <section className="stats-grid">
         <div className="panel stat-card"><span>Criações aprovadas</span><strong>{creator.items.length}</strong></div>
         <div className="panel stat-card"><span>Acessos aos repositórios</span><strong>{downloads.toLocaleString('pt-BR')}</strong></div>
-        <div className="panel stat-card"><span>Atividade</span><div className="activity-grid" style={{ marginTop: 18 }}>{Array.from({ length: 54 }, (_, index) => <span key={index} />)}</div></div>
+        <div className="panel stat-card"><span>Participações em 12 meses</span><strong>{activity.totals.question + activity.totals.answer}</strong><small className="muted">perguntas e respostas públicas</small></div>
       </section>
+
+      <ProfileActivity rows={creator.activityRows} />
 
       <section>
         <div className="profile-section-heading"><div><p className="eyebrow">Portfólio público</p><h2>Criações em destaque</h2></div><span className="muted">Somente itens aprovados</span></div>

@@ -15,7 +15,7 @@ export default async function Header() {
         </form>
         <nav className="nav">
           <Link href="/">Marketplace</Link>
-          <Link href="/community/questions/vulkan-mobile">Comunidade</Link>
+          <Link href="/community/questions">Comunidade</Link>
           <Link href="/donate">Apoie</Link>
           <a href="https://github.com/URSoftware/IgnisEngine/tree/main/doc" target="_blank" rel="noreferrer">Docs</a>
           <Link className="button button-primary header-upload" href="/publish">Publicar</Link>

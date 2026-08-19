@@ -239,6 +239,27 @@ code, pre, .mono { font-family: "JetBrains Mono", "Cascadia Code", Consolas, mon
 .poll-option label span:last-child { margin-left: auto; font-family: "JetBrains Mono", monospace; font-size: 11px; }
 .poll-option input { accent-color: var(--primary); }
 .poll-actions { margin-top: 18px; display: flex; justify-content: flex-end; }
+.community-feed { max-width: 1050px; }
+.community-search { margin-bottom: 20px; display: grid; grid-template-columns: minmax(220px, 1fr) 190px auto; gap: 10px; }
+.question-feed { display: grid; gap: 13px; }
+.question-card { padding: 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.question-card-main { min-width: 0; }
+.question-author { display: flex; align-items: center; gap: 10px; }
+.question-author > span { display: grid; }
+.question-author a { text-decoration: none; }
+.question-author small { color: var(--muted); }
+.question-title { margin: 13px 0 6px; display: block; color: var(--text); font-family: Sora, sans-serif; font-size: 20px; font-weight: 750; text-decoration: none; }
+.question-card-main > p { max-height: 48px; margin-bottom: 12px; overflow: hidden; color: var(--muted); }
+.question-answer-count { min-width: 88px; display: grid; place-items: center; color: var(--muted); font-size: 11px; text-align: center; }
+.question-answer-count strong { color: var(--primary-soft); font-size: 28px; }
+.community-compose-section { margin-top: 30px; }
+.community-compose, .answer-compose { padding: 26px; }
+.community-compose .button, .answer-compose .button { margin-top: 16px; }
+.community-question-layout { display: grid; grid-template-columns: minmax(0, 820px) 280px; gap: 24px; align-items: start; justify-content: center; }
+.community-post-body { white-space: pre-wrap; overflow-wrap: anywhere; }
+.reply-card .question-author { margin-bottom: 14px; }
+.reply-card > small { display: block; margin-top: 14px; }
+.answer-compose { margin-top: 20px; }
 
 /* Creator / organization */
 .profile-hero { position: relative; margin-bottom: 86px; }
@@ -256,10 +277,19 @@ code, pre, .mono { font-family: "JetBrains Mono", "Cascadia Code", Consolas, mon
 .stat-card span { color: var(--muted); }
 .stat-card strong { margin-top: 8px; display: block; font-family: Sora, sans-serif; font-size: 38px; }
 .profile-section-heading { display: flex; justify-content: space-between; align-items: center; }
-.activity-grid { display: grid; grid-template-columns: repeat(18, 1fr); gap: 5px; }
-.activity-grid span { aspect-ratio: 1; border-radius: 3px; background: #24201f; }
-.activity-grid span:nth-child(3n) { background: #74301b; }
-.activity-grid span:nth-child(5n) { background: var(--primary); }
+.profile-activity { margin-bottom: 34px; padding: 26px; }
+.activity-summary { margin: 18px 0; display: flex; flex-wrap: wrap; gap: 12px 24px; color: var(--muted); font-size: 13px; }
+.activity-summary strong { color: var(--text); font-size: 18px; }
+.activity-chart-scroll { padding-bottom: 8px; overflow-x: auto; }
+.activity-grid { width: max-content; display: grid; grid-template-rows: repeat(7, 12px); grid-auto-flow: column; grid-auto-columns: 12px; gap: 4px; }
+.activity-grid span, .activity-legend i { width: 12px; height: 12px; display: block; border: 1px solid rgba(255,255,255,.035); border-radius: 3px; }
+.activity-level-0 { background: #24201f; }
+.activity-level-1 { background: #5c291a; }
+.activity-level-2 { background: #8b351c; }
+.activity-level-3 { background: #c6451f; }
+.activity-level-4 { background: var(--primary); box-shadow: 0 0 7px rgba(255,87,34,.22); }
+.activity-legend { margin-top: 10px; display: flex; align-items: center; justify-content: flex-end; gap: 5px; color: var(--muted); font-size: 11px; }
+.activity-empty-note { margin: 14px 0 0; font-size: 13px; }
 .org-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; }
 .team-card, .activity-card { padding: 22px; }
 .team-member { padding: 12px 0; display: flex; align-items: center; gap: 11px; border-top: 1px solid var(--border-soft); }
@@ -408,6 +438,7 @@ code, pre, .mono { font-family: "JetBrains Mono", "Cascadia Code", Consolas, mon
   .header-search { display: none; }
   .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .community-grid { grid-template-columns: minmax(0, 1fr); }
+  .community-question-layout { grid-template-columns: minmax(0, 1fr); }
   .related-card { display: none; }
   .admin-stats { grid-template-columns: repeat(2, 1fr); }
   .detail-main-image { height: 400px; }
@@ -450,6 +481,9 @@ code, pre, .mono { font-family: "JetBrains Mono", "Cascadia Code", Consolas, mon
   .segmented { max-width: 100%; overflow-x: auto; }
   .form-grid { grid-template-columns: 1fr; }
   .admin-toolbar { grid-template-columns: 1fr; }
+  .community-search { grid-template-columns: 1fr; }
+  .question-card { align-items: flex-start; flex-direction: column; }
+  .question-answer-count { min-width: 0; display: flex; gap: 6px; }
   .admin-pagination { align-items: flex-start; flex-direction: column; }
   .field-full { grid-column: auto; }
   .detail-main-image { height: 300px; }
